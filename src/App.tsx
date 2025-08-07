@@ -1,87 +1,47 @@
-import { useCallback, useMemo, useState } from "react"
-import Header from "./components/Header"
+import React, { useState, useCallback } from 'react';
+import TeacherForm from './components/TeacherForm';
+import TeacherList from './components/TeacherList';
 
-const App = () => {
-  const [count, setCount] = useState(0)
-
-  console.log("App render");
-  const user = {name:"john"} // oybek
-
-  const cachedUser = useMemo(()=>{
-    return user  // chilonzor 
-  }, [])
-
-  const handleInc = () => setCount(p => p + 1) // chilonzor
-
-  const cachedInc = useCallback(()=>{
-    return handleInc()
-  }, [])
-  
-  return (
-    <div>
-      <h2>App</h2>
-      <button onClick={handleInc}>increment {count}</button>
-      <Header title="salom" user={cachedUser} handleInc={cachedInc} setCount={setCount}/>
-    </div>
-  )
+export interface Teacher {
+  id: number;
+  name: string;
+  age: number;
+  address: string;
+  salary: number;
+  phone: string;
 }
 
-export default App
+const App: React.FC = () => {
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [editing, setEditing] = useState<Teacher | null>(null);
 
+  const handleSubmit = useCallback((teacher: Teacher) => {
+    setTeachers(prev => {
+      const exists = prev.find(t => t.id === teacher.id);
+      return exists
+        ? prev.map(t => (t.id === teacher.id ? teacher : t))
+        : [...prev, teacher];
+    });
+    setEditing(null);
+  }, []);
 
+  const handleDelete = useCallback((id: number) => {
+    setTeachers(prev => prev.filter(t => t.id !== id));
+  }, []);
 
+  const handleEdit = useCallback((teacher: Teacher) => {
+    setEditing(teacher);
+  }, []);
 
+  return (
+    <div className="min-h-screen bg-gray-100 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
+        <h1 className="text-2xl font-bold mb-6 text-center">Teacher CRUD </h1>
+        <TeacherForm onSubmit={handleSubmit} selected={editing} />
+        <TeacherList teachers={teachers} onDelete={handleDelete} onEdit={handleEdit} />
+      </div>
+    </div>
+  );
+};
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const App = () => {
-//   return (
-//     <div>
-//       <h2>App</h2>
-//     </div>
-//   )
-// }
-
-// export default App
-
-
-
-
-
-
-
-
-// Optimization part 1
-
-// bundle size
-// memo
-// useMemo
-// useCallback
-// useState
-
-
+export default App;
